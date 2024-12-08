@@ -11,7 +11,10 @@
 #include <sys/resource.h>
 #include <sys/sysctl.h>
 #include <mach/mach.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
+const char* LOG_PIPE = "/tmp/log_system_data";
 const int PORT = 8081;
 std::chrono::time_point<std::chrono::system_clock> start_time = std::chrono::system_clock::now();
 
@@ -22,6 +25,32 @@ std::atomic<bool> running(true);
 
 std::string last_sent_memory = "";
 std::string last_sent_user_time = "";
+
+int log_fd;
+
+void signalHandler(int signal) {
+    if (signal == SIGINT || signal == SIGTERM) {
+        std::cout << "Signal received, shutting down...\n";
+        running = false;
+    }
+}
+
+// Подключение к FIFO для логирования
+void connectToLogPipe() {
+    log_fd = open(LOG_PIPE, O_WRONLY);
+    if (log_fd == -1) {
+        perror("Failed to open FIFO for writing");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// Логирование сообщений
+void logToPipe(const std::string& message) {
+    if (log_fd > 0) {
+        std::string formatted_message = message + "\n";
+        write(log_fd, formatted_message.c_str(), formatted_message.length());
+    }
+}
 
 // Получение текущего часового пояса
 std::string getFreeMemoryPercentage() {
@@ -84,6 +113,7 @@ void broadcastUpdates() {
             std::string response = "Current Memory: " + memory + "\n"
                                    "User Time: " + user_time + "\n"
                                    "Current Time: " + current_time + "\n";
+            logToPipe("Response: " + response);
 
             std::lock_guard<std::mutex> lock(clients_mutex);
 
@@ -94,6 +124,7 @@ void broadcastUpdates() {
                     } else {
                         perror("Error sending data to client");
                     }
+                    logToPipe("Error: " + std::string(strerror(errno)));
 
                     // Удаление разорванного соединения
                     it = clients.erase(it);
@@ -110,6 +141,10 @@ void broadcastUpdates() {
 // Основной сервер
 int main() {
     signal(SIGPIPE, SIG_IGN);
+    signal(SIGINT, signalHandler);
+    signal(SIGTERM, signalHandler);
+    
+    connectToLogPipe();
     
     int server_fd, client_socket;
     struct sockaddr_in address;
@@ -120,12 +155,14 @@ int main() {
     // Создание сокета
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) {
         perror("Socket failed");
+        logToPipe("Error: Socket failed");
         exit(EXIT_FAILURE);
     }
 
     // Настройка сокета
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
         perror("setsockopt failed");
+        logToPipe("Error: setsockopt failed");
         exit(EXIT_FAILURE);
     }
 
@@ -136,16 +173,19 @@ int main() {
     // Привязка сокета
     if (bind(server_fd, (struct sockaddr*)&address, sizeof(address)) < 0) {
         perror("Bind failed");
+        logToPipe("Error: Bind failed");
         exit(EXIT_FAILURE);
     }
 
     // Прослушивание подключений
     if (listen(server_fd, 5) < 0) {
         perror("Listen failed");
+        logToPipe("Error: Listen failed");
         exit(EXIT_FAILURE);
     }
 
     std::cout << "Server is running on port " << PORT << "...\n";
+    logToPipe("Server started on port " + std::to_string(PORT));
     
     std::thread broadcaster(broadcastUpdates);
 
@@ -162,14 +202,17 @@ int main() {
         if (client_socket < 0) {
             if (errno == EINTR) {
                 // Сервер был прерван (например, остановлен)
+                logToPipe("Error: " + std::string(strerror(errno)));
                 std::cout << "Server interrupted. Shutting down.\n";
                 break;
             }
             perror("Accept failed");
+            logToPipe("Error: " + std::string(strerror(errno)));
             continue;
         }
 
         std::cout << "New client connected.\n";
+        logToPipe("Client connected: " + std::to_string(client_socket));
     }
 
     // Завершение работы потоков
@@ -181,5 +224,7 @@ int main() {
     
     broadcaster.join();
     close(server_fd);
+    logToPipe("Server stopped.");
+
     return 0;
 }
