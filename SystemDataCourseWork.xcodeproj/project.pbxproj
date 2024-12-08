@@ -16,10 +16,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 1;
 		};
+		1609BD482D06466600528B5A /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		1609BD3A2D05BFBE00528B5A /* TimeServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = TimeServer; sourceTree = BUILT_PRODUCTS_DIR; };
+		1609BD4A2D06466600528B5A /* SystemDataServer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SystemDataServer; sourceTree = BUILT_PRODUCTS_DIR; };
 		167405A72D05BA2700BE425F /* SystemDataCourseWork.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SystemDataCourseWork.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -27,6 +37,11 @@
 		1609BD3B2D05BFBE00528B5A /* TimeServer */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = TimeServer;
+			sourceTree = "<group>";
+		};
+		1609BD4B2D06466600528B5A /* SystemDataServer */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SystemDataServer;
 			sourceTree = "<group>";
 		};
 		167405A92D05BA2700BE425F /* SystemDataCourseWork */ = {
@@ -38,6 +53,13 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		1609BD372D05BFBE00528B5A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1609BD472D06466600528B5A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -59,6 +81,7 @@
 			children = (
 				167405A92D05BA2700BE425F /* SystemDataCourseWork */,
 				1609BD3B2D05BFBE00528B5A /* TimeServer */,
+				1609BD4B2D06466600528B5A /* SystemDataServer */,
 				167405A82D05BA2700BE425F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -68,6 +91,7 @@
 			children = (
 				167405A72D05BA2700BE425F /* SystemDataCourseWork.app */,
 				1609BD3A2D05BFBE00528B5A /* TimeServer */,
+				1609BD4A2D06466600528B5A /* SystemDataServer */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -95,6 +119,28 @@
 			);
 			productName = TimeServer;
 			productReference = 1609BD3A2D05BFBE00528B5A /* TimeServer */;
+			productType = "com.apple.product-type.tool";
+		};
+		1609BD492D06466600528B5A /* SystemDataServer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1609BD4E2D06466600528B5A /* Build configuration list for PBXNativeTarget "SystemDataServer" */;
+			buildPhases = (
+				1609BD462D06466600528B5A /* Sources */,
+				1609BD472D06466600528B5A /* Frameworks */,
+				1609BD482D06466600528B5A /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				1609BD4B2D06466600528B5A /* SystemDataServer */,
+			);
+			name = SystemDataServer;
+			packageProductDependencies = (
+			);
+			productName = SystemDataServer;
+			productReference = 1609BD4A2D06466600528B5A /* SystemDataServer */;
 			productType = "com.apple.product-type.tool";
 		};
 		167405A62D05BA2700BE425F /* SystemDataCourseWork */ = {
@@ -132,6 +178,9 @@
 					1609BD392D05BFBE00528B5A = {
 						CreatedOnToolsVersion = 16.0;
 					};
+					1609BD492D06466600528B5A = {
+						CreatedOnToolsVersion = 16.0;
+					};
 					167405A62D05BA2700BE425F = {
 						CreatedOnToolsVersion = 16.0;
 					};
@@ -153,6 +202,7 @@
 			targets = (
 				167405A62D05BA2700BE425F /* SystemDataCourseWork */,
 				1609BD392D05BFBE00528B5A /* TimeServer */,
+				1609BD492D06466600528B5A /* SystemDataServer */,
 			);
 		};
 /* End PBXProject section */
@@ -169,6 +219,13 @@
 
 /* Begin PBXSourcesBuildPhase section */
 		1609BD362D05BFBE00528B5A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1609BD462D06466600528B5A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -197,6 +254,28 @@
 			name = Debug;
 		};
 		1609BD3F2D05BFBE00528B5A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KD22N7R738;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		1609BD4F2D06466600528B5A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KD22N7R738;
+				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		1609BD502D06466600528B5A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
@@ -389,6 +468,15 @@
 			buildConfigurations = (
 				1609BD3E2D05BFBE00528B5A /* Debug */,
 				1609BD3F2D05BFBE00528B5A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1609BD4E2D06466600528B5A /* Build configuration list for PBXNativeTarget "SystemDataServer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1609BD4F2D06466600528B5A /* Debug */,
+				1609BD502D06466600528B5A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

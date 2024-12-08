@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject var viewModel = ContentViewModel()
     @StateObject var networkClient = NetworkClient()
     @State var timeServerConnected: Bool = false
     @State var systemServerConnected: Bool = false
@@ -111,12 +110,12 @@ struct ContentView: View {
                     
                     
                     VStack(alignment: .center, spacing: 10) {
-                        Text(networkClient.lastReceiveFromTimeServer == nil ? "" : "Последнее подключение:")
+                        Text(networkClient.lastReceiveFromSystemDataServer == nil ? "" : "Последнее подключение:")
                             .font(.system(size: 16))
-                        Text(networkClient.lastReceiveFromTimeServer ?? "")
+                        Text(networkClient.lastReceiveFromSystemDataServer ?? "")
                             .font(.system(size: 12))
                             .padding()
-                            .background(networkClient.lastReceiveFromTimeServer == nil ? .clear : .black.opacity(0.1))
+                            .background(networkClient.lastReceiveFromSystemDataServer == nil ? .clear : .black.opacity(0.1))
                             .clipShape(RoundedRectangle(cornerRadius: 16), style: FillStyle())
                     }
                     .padding(.top, 20)
@@ -131,10 +130,10 @@ struct ContentView: View {
                         Spacer()
                         
                         VStack {
-                            Text(networkClient.timeZone != nil ? "Использовано памяти" : "")
+                            Text(networkClient.freeMemory != nil ? "Использовано памяти" : "")
                                 .font(.system(size: 16))
                                 .padding(.bottom, 2)
-                            Text(networkClient.timeZone ?? "")
+                            Text(networkClient.freeMemory ?? "")
                                 .font(.system(size: 40, weight: .bold))
                                 .italic()
                                 .foregroundStyle(.cyan)
@@ -143,10 +142,10 @@ struct ContentView: View {
                         Spacer()
                         
                         VStack {
-                            Text(networkClient.durationOfWork != nil ? "Пользовательское время CPU:" : "")
+                            Text(networkClient.userModeWorkTime != nil ? "Пользовательское время CPU:" : "")
                                 .font(.system(size: 16))
                                 .padding(.bottom, 2)
-                            Text(networkClient.durationOfWork ?? "")
+                            Text(networkClient.userModeWorkTime ?? "")
                                 .font(.system(size: 40))
                                 .italic()
                                 .foregroundStyle(.cyan)
@@ -162,9 +161,9 @@ struct ContentView: View {
                     HStack() {
                         Button(systemServerConnected ? "Отключиться" : "Подключиться") {
                             if systemServerConnected {
-                                networkClient.disconnectTimeServer()
+                                networkClient.disconnectSystemDataServer()
                             } else {
-                                networkClient.connectTimeServer()
+                                networkClient.connectSystemDataServer()
                             }
                             withAnimation {
                                 systemServerConnected.toggle()

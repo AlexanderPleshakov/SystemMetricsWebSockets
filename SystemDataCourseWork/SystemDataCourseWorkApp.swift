@@ -12,6 +12,7 @@ struct SystemDataCourseWorkApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .navigationTitle("Подключение к серверам")
         }
     }
 }
