@@ -57,53 +57,6 @@ bool hasStateChanged(std::string& current_timezone, std::string& current_duratio
     return false;
 }
 
-// Обработка подключения клиента
-void handleClient(int client_socket) {
-//    {
-//        std::lock_guard<std::mutex> lock(clients_mutex);
-//        clients.push_back(client_socket);
-//    }
-    
-    while (true) {
-        std::string timezone;
-        std::string session_duration;
-        
-        // Проверяем изменения
-        if (hasStateChanged(timezone, session_duration)) {
-            // Текущее время
-            auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-            std::string current_time = std::ctime(&now);
-            current_time.pop_back(); // Убираем символ новой строки
-
-            // Сформировать ответ
-            std::string response = "Current Timezone: " + timezone + "\n"
-                                   "Session Duration: " + session_duration + "\n"
-                                   "Current Time: " + current_time + "\n";
-
-            // Отправить данные клиенту
-            if (send(client_socket, response.c_str(), response.length(), 0) == -1) {
-                if (errno == EPIPE) {
-                    std::cerr << "Client disconnected (broken pipe).\n";
-                } else {
-                    perror("Error sending data to client");
-                }
-                break; // Завершение обработки клиента
-            }
-        }
-        
-        // Пауза для оптимизации
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-    
-//    {
-//        std::lock_guard<std::mutex> lock(clients_mutex);
-//        clients.erase(std::remove(clients.begin(), clients.end(), client_socket), clients.end());
-//    }
-    
-    close(client_socket);
-    std::cout << "Client disconnected.\n";
-}
-
 void broadcastUpdates() {
     while (running) {
         std::string timezone;
@@ -186,7 +139,10 @@ int main() {
         client_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen);
         std::cout << "Client socket " << client_socket << "\n";
         
-        clients.push_back(client_socket);
+        {
+            std::lock_guard<std::mutex> lock(clients_mutex);
+            clients.push_back(client_socket);
+        }
         
         // Обработка ошибок accept
         if (client_socket < 0) {
@@ -201,12 +157,7 @@ int main() {
 
         std::cout << "New client connected.\n";
 
-        // Запуск нового потока для клиента
-        //{
-          //  std::lock_guard<std::mutex> lock(clients_mutex);
-        //clients.push_back(client_socket);
-            threads.emplace_back(std::thread(handleClient, client_socket));
-        //}
+        // threads.emplace_back(std::thread(handleClient, client_socket));
     }
 
     // Завершение работы потоков
@@ -216,6 +167,7 @@ int main() {
         }
     }
     
+    broadcaster.join();
     close(server_fd);
     return 0;
 }

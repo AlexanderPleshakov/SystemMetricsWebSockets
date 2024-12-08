@@ -17,7 +17,7 @@ struct ContentView: View {
             Text(networkClient.timeZone ?? "None time zone")
             Text(networkClient.lastReceiveFromTimeServer ?? "None time connection")
             HStack {
-                Button("Connect to Server") {
+                Button("Connect") {
                     networkClient.connectTimeServer()
                 }
                 Button("Disconnect") {
