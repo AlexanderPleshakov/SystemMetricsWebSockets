@@ -7,6 +7,7 @@
 
 import Foundation
 import Network
+import SwiftUI
 
 enum ReceivingType {
     case time, systemData
@@ -28,6 +29,9 @@ final class NetworkClient: ObservableObject {
     @Published var userModeWorkTime: String?
     @Published var lastReceiveFromSystemDataServer: String?
     
+    @Published var timeServerConnected: Bool = false
+    @Published var systemServerConnected: Bool = false
+    
     func connectTimeServer() {
         connectToServer(host: host, port: timePort)
     }
@@ -35,6 +39,9 @@ final class NetworkClient: ObservableObject {
     func disconnectTimeServer() {
         timeServerConnection?.cancel()
         timeServerConnection = nil
+        withAnimation {
+            self.timeServerConnected = false
+        }
         print("Disconnected from server")
     }
     
@@ -45,6 +52,9 @@ final class NetworkClient: ObservableObject {
     func disconnectSystemDataServer() {
         systemDataServerConnection?.cancel()
         systemDataServerConnection = nil
+        withAnimation {
+            self.systemServerConnected = false
+        }
         print("Disconnected from server")
     }
 
@@ -62,6 +72,9 @@ final class NetworkClient: ObservableObject {
                 case .ready:
                     print("Connected to \(host):\(port)")
                     self.startReceiving(type: .time)
+                    withAnimation {
+                        self.timeServerConnected = true
+                    }
                 case .failed(let error):
                     print("Connection failed: \(error)")
                 default:
@@ -82,6 +95,9 @@ final class NetworkClient: ObservableObject {
                 case .ready:
                     print("Connected to \(host):\(port)")
                     self.startReceiving(type: .systemData)
+                    withAnimation {
+                        self.systemServerConnected = true
+                    }
                 case .failed(let error):
                     print("Connection failed: \(error)")
                 default:
@@ -130,6 +146,16 @@ final class NetworkClient: ObservableObject {
             if isComplete {
                 print("Connection closed by server")
                 connection?.cancel()
+                switch type {
+                case .time:
+                    withAnimation {
+                        self.timeServerConnected = false
+                    }
+                case .systemData:
+                    withAnimation {
+                        self.systemServerConnected = false
+                    }
+                }
             } else {
                 // Слушаем снова
                 self.startReceiving(type: type)

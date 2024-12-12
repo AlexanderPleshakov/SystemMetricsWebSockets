@@ -30,16 +30,24 @@ void signalHandler(int signal) {
     if (signal == SIGINT || signal == SIGTERM) {
         std::cout << "Signal received, shutting down...\n";
         running = false;
+
+        // Закрытие всех клиентских сокетов
+        std::lock_guard<std::mutex> lock(clients_mutex);
+        for (int client_socket : clients) {
+            close(client_socket);
+        }
+        clients.clear();
     }
 }
 
 // Подключение к FIFO для логирования
 void connectToLogPipe() {
-    log_fd = open(LOG_PIPE, O_WRONLY);
+    log_fd = open(LOG_PIPE, O_WRONLY | O_NONBLOCK);
     if (log_fd == -1) {
         perror("Failed to open FIFO for writing");
-        exit(EXIT_FAILURE);
+        return;
     }
+    return;
 }
 
 // Логирование сообщений
@@ -47,6 +55,8 @@ void logToPipe(const std::string& message) {
     if (log_fd > 0) {
         std::string formatted_message = message + "\n";
         write(log_fd, formatted_message.c_str(), formatted_message.length());
+    } else {
+        connectToLogPipe();
     }
 }
 
@@ -125,7 +135,6 @@ void broadcastUpdates() {
     }
 }
 
-// Основной сервер
 int main() {
     signal(SIGPIPE, SIG_IGN);
     signal(SIGINT, signalHandler);
@@ -180,15 +189,14 @@ int main() {
         client_socket = accept(server_fd, (struct sockaddr*)&address, (socklen_t*)&addrlen);
         std::cout << "Client socket " << client_socket << "\n";
         
-        {
-            std::lock_guard<std::mutex> lock(clients_mutex);
-            clients.push_back(client_socket);
+        if (!running) {
+            break; // Прерывание при завершении работы
         }
         
         // Обработка ошибок accept
         if (client_socket < 0) {
             if (errno == EINTR) {
-                // Сервер был прерван (например, остановлен)
+                // Сервер был прерван
                 std::cout << "Server interrupted. Shutting down.\n";
                 logToPipe("Interrupted: Server interrupted. Shutting down.\n");
                 break;
@@ -197,20 +205,30 @@ int main() {
             perror("Accept failed");
             continue;
         }
+        
+        {
+            std::lock_guard<std::mutex> lock(clients_mutex);
+            clients.push_back(client_socket);
+        }
 
         std::cout << "New client connected.\n";
         logToPipe("Client connected: " + std::to_string(client_socket));
     }
-
-    // Завершение работы потоков
+    
+    broadcaster.join();
+    
+    shutdown(server_fd, SHUT_RDWR);
+    close(server_fd); // Закрываем основной серверный сокет.
+    if (log_fd > 0) {
+        close(log_fd); // Закрываем дескриптор FIFO.
+    }
+    
     for (auto& t : threads) {
         if (t.joinable()) {
             t.join();
         }
     }
     
-    broadcaster.join();
-    close(server_fd);
     logToPipe("Server stopped.");
 
     return 0;

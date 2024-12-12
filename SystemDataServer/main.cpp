@@ -37,11 +37,12 @@ void signalHandler(int signal) {
 
 // Подключение к FIFO для логирования
 void connectToLogPipe() {
-    log_fd = open(LOG_PIPE, O_WRONLY);
+    log_fd = open(LOG_PIPE, O_WRONLY | O_NONBLOCK);
     if (log_fd == -1) {
         perror("Failed to open FIFO for writing");
-        exit(EXIT_FAILURE);
+        return;
     }
+    return;
 }
 
 // Логирование сообщений
@@ -49,10 +50,12 @@ void logToPipe(const std::string& message) {
     if (log_fd > 0) {
         std::string formatted_message = message + "\n";
         write(log_fd, formatted_message.c_str(), formatted_message.length());
+    } else {
+        connectToLogPipe();
     }
 }
 
-// Получение текущего часового пояса
+
 std::string getFreeMemoryPercentage() {
     vm_statistics64_data_t vm_stats;
     mach_msg_type_number_t info_count = HOST_VM_INFO64_COUNT;
@@ -73,7 +76,6 @@ std::string getFreeMemoryPercentage() {
 }
 
 
-// Вычисление продолжительности текущей сессии
 std::string getUserTime() {
     struct rusage usage;
     if (getrusage(RUSAGE_SELF, &usage) == 0) {

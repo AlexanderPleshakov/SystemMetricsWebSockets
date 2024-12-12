@@ -9,14 +9,12 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject var networkClient = NetworkClient()
-    @State var timeServerConnected: Bool = false
-    @State var systemServerConnected: Bool = false
     
     var body: some View {
         HStack {
             ZStack {
                 Color(.white)
-                    .background(timeServerConnected ? .green : .red).opacity(0.08)
+                    .background(networkClient.timeServerConnected ? .green : .red).opacity(0.08)
                     .clipShape(RoundedRectangle(cornerRadius: 20), style: FillStyle())
                 VStack {
                     Text("Сервер 1")
@@ -74,19 +72,16 @@ struct ContentView: View {
                     
                     
                     HStack() {
-                        Button(timeServerConnected ? "Отключиться" : "Подключиться") {
-                            if timeServerConnected {
+                        Button(networkClient.timeServerConnected ? "Отключиться" : "Подключиться") {
+                            if networkClient.timeServerConnected {
                                 networkClient.disconnectTimeServer()
                             } else {
                                 networkClient.connectTimeServer()
                             }
-                            withAnimation {
-                                timeServerConnected.toggle()
-                            }
                         }
                         .buttonStyle(
                             GrowingButton(
-                                color: timeServerConnected ? .red : .green.opacity(0.7)
+                                color: networkClient.timeServerConnected ? .red : .green.opacity(0.7)
                             )
                         )
                     }
@@ -101,7 +96,7 @@ struct ContentView: View {
             
             ZStack {
                 Color(.white)
-                    .background(systemServerConnected ? .green : .red).opacity(0.08)
+                    .background(networkClient.systemServerConnected ? .green : .red).opacity(0.08)
                     .clipShape(RoundedRectangle(cornerRadius: 20), style: FillStyle())
                 VStack {
                     Text("Сервер 2")
@@ -159,19 +154,16 @@ struct ContentView: View {
                     
                     
                     HStack() {
-                        Button(systemServerConnected ? "Отключиться" : "Подключиться") {
-                            if systemServerConnected {
+                        Button(networkClient.systemServerConnected ? "Отключиться" : "Подключиться") {
+                            if networkClient.systemServerConnected {
                                 networkClient.disconnectSystemDataServer()
                             } else {
                                 networkClient.connectSystemDataServer()
                             }
-                            withAnimation {
-                                systemServerConnected.toggle()
-                            }
                         }
                         .buttonStyle(
                             GrowingButton(
-                                color: systemServerConnected ? .red : .green.opacity(0.7)
+                                color: networkClient.systemServerConnected ? .red : .green.opacity(0.7)
                             )
                         )
                     }
